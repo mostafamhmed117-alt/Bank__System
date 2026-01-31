@@ -338,12 +338,6 @@ void ShowExitScreen()
 	cout << "-------------------------------------------\n";
 }
 
-enum enTransaction
-{
-	eDeposit = 1,
-	eWithdraw = 2
-};
-
 string ReadAccountNumber()
 {
 	string AccountNumber;
@@ -352,11 +346,8 @@ string ReadAccountNumber()
 	return AccountNumber;
 }
 
-bool ConfirmTransactionChoies(vector<stInfo>&vClients,string AccountNumber,enTransaction Choies)
+bool ConfirmTransactionChoies(vector<stInfo>&vClients,string AccountNumber,double &Amount)
 {
-	double Amount = 0;
-	cout << "Please enter amount? ";
-	cin >> Amount;
 	char Answer = 'y';
 	cout << "\nAre you sure you want to perform this transaction?(Y/N)? ";
 	cin >> Answer;
@@ -364,26 +355,12 @@ bool ConfirmTransactionChoies(vector<stInfo>&vClients,string AccountNumber,enTra
 	{
 		for (stInfo& C : vClients)
 		{
-			if (C.AccountNumber == AccountNumber && Choies == enTransaction::eDeposit)
+			if (C.AccountNumber == AccountNumber)
 			{
 				C.AccountBalance += Amount;
-				cout << "\nDone successfully.\n";
+				cout << "\nDone successfully, New Balance is: "<< C.AccountBalance<<endl;
 				return true;
-			}
-			else if (C.AccountNumber == AccountNumber && Choies == enTransaction::eWithdraw)
-			{
-				while(C.AccountBalance < Amount)
-				{
-					cout << "\nAmount Exceeds the blance, you can withdraw up to : " << C.AccountBalance << endl;
-					cout << "Please enter amount? ";
-					cin >> Amount;
-					
-				}
-				C.AccountBalance -= Amount;
-				cout << "\nDone successfully.\n";
-				return true;
-				
-			}
+			}	
 		}
 	}
 	return false;
@@ -404,7 +381,10 @@ void ShowDepositScreen()
 		AccountNumner = ReadAccountNumber();
 	}
 	ShowClientInfo(Client);
-	ConfirmTransactionChoies(vClients,AccountNumner,enTransaction::eDeposit);
+	double Amount = 0;
+	cout << "Please enter Deposit amount? ";
+	cin >> Amount;
+	ConfirmTransactionChoies(vClients,AccountNumner,Amount);
 	SaveClientInFile(vClients);
 }
 
@@ -422,7 +402,17 @@ void ShowWithdrawScreen()
 		AccountNumner = ReadAccountNumber();
 	}
 	ShowClientInfo(Client);
-	ConfirmTransactionChoies(vClients, AccountNumner, enTransaction::eWithdraw);
+	double Amount = 0;
+	cout << "Please enter withdraw amount? ";
+	cin >> Amount;
+	while (Amount > Client.AccountBalance)
+	{
+		cout << "\nAmount Exceeds the blance, you can withdraw up to : " << Client.AccountBalance << endl;
+		cout << "Please enter withdraw amount? ";
+		cin >> Amount;
+	}
+	Amount *= -1;
+	ConfirmTransactionChoies(vClients, AccountNumner,Amount);
 	SaveClientInFile(vClients);
 }
 
@@ -479,7 +469,7 @@ short ReadTransactionNumber()
 
 void BackToTransactionScreen()
 {
-	cout << "\nPress any key to go back to main Menue\n";
+	cout << "\nPress any key to go back to Transaction Menue\n";
 	system("pause>0");
 	ShowTransactionScreen();
 }
@@ -505,9 +495,7 @@ void PreformYourTransaction(TransactonChoies Ch)
 		BackToTransactionScreen();
 		break;
 	case TransactonChoies::enMainMenue:
-		system("cls");
 		ShowMainMenue();
-		break;
 	}
 	
 }
